@@ -145,7 +145,6 @@
     stageCover.addEventListener('error', () => { stageCover.hidden = true; display.classList.remove('has-cover'); });
     display.append(stageCover);
     let selected = 0;
-    let tab = 'tracks';
     let currentTrack = -1;
     let embedController = null;
     let embedFallback = false;
@@ -154,10 +153,10 @@
     const playerHost = document.createElement('div');
     playerHost.className = 'spotify-player';
     playerHost.setAttribute('aria-label', 'Spotify 官方播放器');
-    content.after(playerHost);
+    document.querySelector('.music-control-caption').after(playerHost);
     const playerHint = document.createElement('p');
     playerHint.className = 'spotify-hint';
-    playerHint.textContent = '点选曲目切换播放器；如未自动播放，请在 Spotify 播放器中点击播放。';
+    playerHint.textContent = '点选右侧曲目切换试听；播放时长由 Spotify 决定。';
     playerHost.after(playerHint);
     const albumLink = document.createElement('a');
     albumLink.className = 'spotify-album-link';
@@ -165,8 +164,6 @@
     albumLink.rel = 'noopener noreferrer';
     albumLink.textContent = '在 Spotify 打开整张专辑 ↗';
     playerHint.after(albumLink);
-    const playButton = document.getElementById('music-play');
-    playButton.setAttribute('aria-label', '播放或暂停 Spotify 试听');
     function albumEntity(album) { return album.spotifyUrl || ''; }
     function showFallback() {
       embedFallback = true;
@@ -207,14 +204,9 @@
       const initialEntity = currentEntity || albumEntity(albums[0]);
       const embedMount = document.createElement('div');
       playerHost.append(embedMount);
-      IFrameAPI.createController(embedMount, { url: initialEntity, width: playerHost.clientWidth || 550, height: 152 }, controller => {
+      IFrameAPI.createController(embedMount, { url: initialEntity, width: playerHost.clientWidth || 420, height: 80 }, controller => {
         embedController = controller;
         loadedEntity = initialEntity;
-        controller.addListener('playback_update', event => {
-          const playing = !event.data.isPaused;
-          playButton.textContent = playing ? 'Ⅱ' : '▶';
-          playButton.setAttribute('aria-label', playing ? '暂停 Spotify 试听' : '播放 Spotify 试听');
-        });
         if (currentEntity && currentEntity !== initialEntity) loadEntity(currentEntity);
       });
     };
@@ -242,13 +234,17 @@
       const inner = document.createElement('div');
       inner.className = 'music-detail-inner';
       const title = document.createElement('h3');
-      title.textContent = tab === 'about' ? album.title : 'Tracklist';
+      title.textContent = 'Tracklist';
       inner.append(title);
-      if (tab === 'about' || !album.tracks.length) {
+      if (!album.tracks.length) {
         const description = document.createElement('p');
-        description.textContent = tab === 'about' ? album.note : '曲目待整理；这张专辑暂未接入播放器。';
+        description.textContent = '这张专辑的曲目还在整理中。';
         inner.append(description);
       } else {
+        const count = document.createElement('p');
+        count.className = 'music-track-count';
+        count.textContent = String(album.tracks.length).padStart(2, '0') + ' SONGS · 2017';
+        inner.append(count);
         const list = document.createElement('ol');
         list.className = 'music-tracklist';
         album.tracks.forEach((track, index) => {
@@ -256,14 +252,21 @@
           const button = document.createElement('button');
           button.type = 'button';
           button.className = 'music-track' + (index === currentTrack ? ' active' : '');
-          button.setAttribute('aria-label', '试听第' + (index + 1) + '首 ' + track.title);
+          button.setAttribute('aria-label', '选择第' + (index + 1) + '首 ' + track.title);
           const number = document.createElement('span');
           number.textContent = String(index + 1).padStart(2, '0');
+          const copy = document.createElement('span');
+          copy.className = 'music-track-copy';
           const name = document.createElement('strong');
           name.textContent = track.title;
+          const credit = document.createElement('small');
+          credit.textContent = track.lyricist && track.composer
+            ? '作词 ' + track.lyricist + '  ·  作曲 ' + track.composer
+            : album.artist;
+          copy.append(name, credit);
           const duration = document.createElement('span');
           duration.textContent = track.duration;
-          button.append(number, name, duration);
+          button.append(number, copy, duration);
           button.addEventListener('click', () => {
             currentTrack = index;
             loadEntity('https://open.spotify.com/track/' + track.spotifyId);
@@ -311,22 +314,8 @@
       button.addEventListener('click', () => { selected = index; currentTrack = -1; renderDetail(); document.querySelector('.music-stage').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
       wall.append(button);
     });
-    document.querySelectorAll('[data-music-tab]').forEach(button => button.addEventListener('click', () => {
-      tab = button.dataset.musicTab;
-      document.querySelectorAll('[data-music-tab]').forEach(item => {
-        const active = item === button;
-        item.classList.toggle('active', active);
-        item.setAttribute('aria-selected', String(active));
-      });
-      renderDetail();
-    }));
     document.getElementById('music-prev').addEventListener('click', () => { selected = (selected - 1 + albums.length) % albums.length; currentTrack = -1; renderDetail(); });
     document.getElementById('music-next').addEventListener('click', () => { selected = (selected + 1) % albums.length; currentTrack = -1; renderDetail(); });
-    playButton.addEventListener('click', () => {
-      if (embedController && currentEntity) embedController.togglePlay();
-      else if (currentEntity) toast('请在 Spotify 播放器中点按播放。');
-      else toast('这张专辑尚未接入试听。');
-    });
     renderDetail();
   }
 })();

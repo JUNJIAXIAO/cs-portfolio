@@ -59,24 +59,33 @@
   .music-display .music-disc { transition: none; }
 }
 
-.music-stage .music-info { display: flex; flex-direction: column; min-width: 0; }
+.music-stage .music-disc-panel { min-width: 0; padding: 32px 28px; }
+.music-stage .music-info { display: flex; flex-direction: column; min-width: 0; padding: 33px 30px; }
 .music-stage .music-info-content { display: block; min-height: 0; flex: 1; text-align: left; }
 .music-detail-inner { width: 100%; }
-.music-detail-inner h3 { margin: 18px 0 8px; font-size: 22px; }
-.music-detail-inner p { margin: 0 0 15px; line-height: 1.7; }
-.music-tracklist { max-height: 272px; overflow-y: auto; margin: 8px 0 16px; padding: 0; list-style: none; scrollbar-color: #a7b8bb transparent; }
+.music-detail-inner h3 { margin: 0; font-size: 25px; }
+.music-detail-inner p { line-height: 1.7; }
+.music-detail-inner .music-track-count { margin: 3px 0 14px; color: var(--muted); font: 10px/1.4 ui-monospace, monospace; letter-spacing: .12em; }
+.music-tracklist { margin: 0; padding: 0; list-style: none; }
 .music-tracklist li { margin: 0; }
-.music-track { display: grid; grid-template-columns: 30px minmax(0,1fr) 36px; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 4px 10px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+.music-track { display: grid; grid-template-columns: 28px minmax(0,1fr) 35px; align-items: center; gap: 11px; width: 100%; min-height: 58px; padding: 6px 10px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
 .music-track:hover, .music-track.active { background: #d8e2df88; border-radius: 8px; }
-.music-track span { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-.music-track strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; font-size: 12px; }
-.spotify-player { width: 100%; min-height: 152px; overflow: hidden; border-radius: 12px; background: #172120; }
+.music-track > span:first-child, .music-track > span:last-child { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.music-track-copy { display: flex; flex-direction: column; min-width: 0; gap: 3px; }
+.music-track-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; font-size: 12px; }
+.music-track-copy small { overflow: hidden; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.music-disc-panel .music-controls { gap: 15px; margin-top: 14px; }
+.music-disc-panel .music-controls button { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 50%; background: #fff9; font-size: 19px; cursor: pointer; }
+.music-disc-panel .music-controls span { color: var(--muted); font-size: 10px; letter-spacing: .12em; }
+.music-control-caption { margin: 27px 0 9px !important; font: 10px/1.4 ui-monospace, monospace !important; letter-spacing: .16em; }
+.spotify-player { width: min(100%, 370px); height: 80px; overflow: hidden; border-radius: 12px; background: #172120; }
 .spotify-player[hidden] { display: none; }
-.spotify-player iframe { display: block; width: 100%; height: 152px; border: 0; }
-.spotify-hint { margin: 9px 0 3px !important; color: var(--muted); font-size: 10px !important; line-height: 1.55; }
+.spotify-player iframe { display: block; width: 100%; height: 80px; border: 0; }
+.spotify-hint { max-width: 370px; margin: 9px 0 3px !important; color: var(--muted); font-size: 10px !important; line-height: 1.55; }
 .spotify-hint[hidden], .spotify-album-link[hidden] { display: none; }
-.spotify-album-link { align-self: flex-end; color: var(--accent); font-size: 11px; text-decoration: none; }
+.spotify-album-link { align-self: center; margin-top: 4px; color: var(--accent); font-size: 11px; text-decoration: none; }
 .spotify-album-link:hover { text-decoration: underline; }
-.music-control-caption { margin: 10px 0 0 !important; font-size: 10px !important; }
-.music-controls button { cursor: pointer; }
-@media (max-width: 700px) { .music-tracklist { max-height: 240px; } }
+@media (max-width: 700px) {
+  .music-stage .music-info { padding: 24px 18px; }
+  .music-track { min-height: 58px; }
+}
