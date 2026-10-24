@@ -134,6 +134,16 @@
     const albums = window.MUSIC_ALBUMS || [];
     const wall = document.getElementById('music-wall');
     const content = document.getElementById('music-info-content');
+    const disc = document.getElementById('music-disc');
+    const display = document.createElement('div');
+    display.className = 'music-display';
+    disc.before(display);
+    display.append(disc);
+    const stageCover = document.createElement('img');
+    stageCover.className = 'music-stage-cover';
+    stageCover.hidden = true;
+    stageCover.addEventListener('error', () => { stageCover.hidden = true; display.classList.remove('has-cover'); });
+    display.append(stageCover);
     let selected = -1;
     let tab = 'about';
     document.getElementById('album-count').textContent = String(albums.length).padStart(2, '0') + ' RECORDS';
@@ -142,8 +152,14 @@
       if (!album) return;
       document.getElementById('music-now-title').textContent = album.title;
       document.getElementById('music-now-artist').textContent = album.artist;
-      const disc = document.getElementById('music-disc');
       disc.style.background = 'repeating-radial-gradient(circle,' + album.colors[0] + ' 0 2px,' + album.colors[1] + ' 3px 4px,' + album.colors[0] + ' 5px 8px)';
+      display.style.setProperty('--album-glow', album.colors[0]);
+      display.classList.toggle('has-cover', Boolean(album.cover));
+      stageCover.hidden = !album.cover;
+      if (album.cover) {
+        stageCover.alt = album.title + '专辑封面';
+        stageCover.src = album.cover;
+      }
       content.innerHTML = '';
       const inner = document.createElement('div');
       const title = document.createElement('h3');
@@ -163,6 +179,16 @@
       art.className = 'music-art';
       art.style.setProperty('--c1', album.colors[0]);
       art.style.setProperty('--c2', album.colors[1]);
+      if (album.cover) {
+        const cover = document.createElement('img');
+        cover.alt = album.title + '专辑封面';
+        cover.loading = 'lazy';
+        cover.decoding = 'async';
+        cover.addEventListener('error', () => { cover.remove(); art.classList.remove('has-cover'); });
+        cover.src = album.cover;
+        art.classList.add('has-cover');
+        art.append(cover);
+      }
       const artTitle = document.createElement('span');
       artTitle.textContent = album.title;
       art.append(artTitle);
