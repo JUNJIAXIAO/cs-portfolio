@@ -144,8 +144,86 @@
     stageCover.hidden = true;
     stageCover.addEventListener('error', () => { stageCover.hidden = true; display.classList.remove('has-cover'); });
     display.append(stageCover);
-    let selected = -1;
-    let tab = 'about';
+    let selected = 0;
+    let tab = 'tracks';
+    let currentTrack = -1;
+    let embedController = null;
+    let embedFallback = false;
+    let currentEntity = albums[0] && albums[0].spotifyUrl || '';
+    let loadedEntity = '';
+    const playerHost = document.createElement('div');
+    playerHost.className = 'spotify-player';
+    playerHost.setAttribute('aria-label', 'Spotify 官方播放器');
+    content.after(playerHost);
+    const playerHint = document.createElement('p');
+    playerHint.className = 'spotify-hint';
+    playerHint.textContent = '点选曲目切换播放器；如未自动播放，请在 Spotify 播放器中点击播放。';
+    playerHost.after(playerHint);
+    const albumLink = document.createElement('a');
+    albumLink.className = 'spotify-album-link';
+    albumLink.target = '_blank';
+    albumLink.rel = 'noopener noreferrer';
+    albumLink.textContent = '在 Spotify 打开整张专辑 ↗';
+    playerHint.after(albumLink);
+    const playButton = document.getElementById('music-play');
+    playButton.setAttribute('aria-label', '播放或暂停 Spotify 试听');
+    function albumEntity(album) { return album.spotifyUrl || ''; }
+    function showFallback() {
+      embedFallback = true;
+      playerHost.replaceChildren();
+      if (!currentEntity) return;
+      const frame = document.createElement('iframe');
+      frame.title = 'Spotify 官方试听播放器';
+      frame.src = currentEntity.replace('open.spotify.com/', 'open.spotify.com/embed/');
+      frame.loading = 'lazy';
+      frame.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+      frame.setAttribute('allowfullscreen', '');
+      playerHost.append(frame);
+      loadedEntity = currentEntity;
+    }
+    function loadEntity(url) {
+      currentEntity = url;
+      if (!url) {
+        playerHost.hidden = true;
+        playerHint.hidden = true;
+        albumLink.hidden = true;
+        if (embedController) embedController.pause();
+        if (embedFallback) playerHost.replaceChildren();
+        loadedEntity = '';
+        return;
+      }
+      playerHost.hidden = false;
+      playerHint.hidden = false;
+      albumLink.hidden = false;
+      if (embedController && url !== loadedEntity) {
+        embedController.loadEntity(url);
+        loadedEntity = url;
+      } else if (embedFallback && url !== loadedEntity) showFallback();
+    }
+    window.onSpotifyIframeApiReady = IFrameAPI => {
+      if (!playerHost.isConnected) return;
+      embedFallback = false;
+      playerHost.replaceChildren();
+      const initialEntity = currentEntity || albumEntity(albums[0]);
+      const embedMount = document.createElement('div');
+      playerHost.append(embedMount);
+      IFrameAPI.createController(embedMount, { url: initialEntity, width: playerHost.clientWidth || 550, height: 152 }, controller => {
+        embedController = controller;
+        loadedEntity = initialEntity;
+        controller.addListener('playback_update', event => {
+          const playing = !event.data.isPaused;
+          playButton.textContent = playing ? 'Ⅱ' : '▶';
+          playButton.setAttribute('aria-label', playing ? '暂停 Spotify 试听' : '播放 Spotify 试听');
+        });
+        if (currentEntity && currentEntity !== initialEntity) loadEntity(currentEntity);
+      });
+    };
+    const spotifyScript = document.createElement('script');
+    spotifyScript.src = 'https://open.spotify.com/embed/iframe-api/v1';
+    spotifyScript.async = true;
+    spotifyScript.onerror = showFallback;
+    document.head.append(spotifyScript);
+    setTimeout(() => { if (!embedController && !embedFallback) showFallback(); }, 7000);
     document.getElementById('album-count').textContent = String(albums.length).padStart(2, '0') + ' RECORDS';
     function renderDetail() {
       const album = albums[selected];
@@ -162,12 +240,45 @@
       }
       content.innerHTML = '';
       const inner = document.createElement('div');
+      inner.className = 'music-detail-inner';
       const title = document.createElement('h3');
       title.textContent = tab === 'about' ? album.title : 'Tracklist';
-      const description = document.createElement('p');
-      description.textContent = tab === 'about' ? album.note : (album.tracks && album.tracks.length ? album.tracks.join(' · ') : '曲目待整理；确定最终专辑名单后再填写。');
-      inner.append(title, description);
+      inner.append(title);
+      if (tab === 'about' || !album.tracks.length) {
+        const description = document.createElement('p');
+        description.textContent = tab === 'about' ? album.note : '曲目待整理；这张专辑暂未接入播放器。';
+        inner.append(description);
+      } else {
+        const list = document.createElement('ol');
+        list.className = 'music-tracklist';
+        album.tracks.forEach((track, index) => {
+          const item = document.createElement('li');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'music-track' + (index === currentTrack ? ' active' : '');
+          button.setAttribute('aria-label', '试听第' + (index + 1) + '首 ' + track.title);
+          const number = document.createElement('span');
+          number.textContent = String(index + 1).padStart(2, '0');
+          const name = document.createElement('strong');
+          name.textContent = track.title;
+          const duration = document.createElement('span');
+          duration.textContent = track.duration;
+          button.append(number, name, duration);
+          button.addEventListener('click', () => {
+            currentTrack = index;
+            loadEntity('https://open.spotify.com/track/' + track.spotifyId);
+            renderDetail();
+          });
+          item.append(button);
+          list.append(item);
+        });
+        inner.append(list);
+      }
       content.append(inner);
+      albumLink.href = album.spotifyUrl || '#';
+      loadEntity(currentTrack >= 0 && album.tracks[currentTrack]
+        ? 'https://open.spotify.com/track/' + album.tracks[currentTrack].spotifyId
+        : albumEntity(album));
       wall.querySelectorAll('.music-album').forEach((button, index) => button.classList.toggle('selected', index === selected));
     }
     albums.forEach((album, index) => {
@@ -197,7 +308,7 @@
       const artist = document.createElement('small');
       artist.textContent = album.artist;
       button.append(art, title, artist);
-      button.addEventListener('click', () => { selected = index; renderDetail(); document.querySelector('.music-stage').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+      button.addEventListener('click', () => { selected = index; currentTrack = -1; renderDetail(); document.querySelector('.music-stage').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
       wall.append(button);
     });
     document.querySelectorAll('[data-music-tab]').forEach(button => button.addEventListener('click', () => {
@@ -209,8 +320,13 @@
       });
       renderDetail();
     }));
-    document.getElementById('music-prev').addEventListener('click', () => { selected = (selected - 1 + albums.length) % albums.length; renderDetail(); });
-    document.getElementById('music-next').addEventListener('click', () => { selected = (selected + 1) % albums.length; renderDetail(); });
-    document.getElementById('music-play').addEventListener('click', () => toast('尚未接入音源。公开网站建议使用正版平台官方嵌入播放器。'));
+    document.getElementById('music-prev').addEventListener('click', () => { selected = (selected - 1 + albums.length) % albums.length; currentTrack = -1; renderDetail(); });
+    document.getElementById('music-next').addEventListener('click', () => { selected = (selected + 1) % albums.length; currentTrack = -1; renderDetail(); });
+    playButton.addEventListener('click', () => {
+      if (embedController && currentEntity) embedController.togglePlay();
+      else if (currentEntity) toast('请在 Spotify 播放器中点按播放。');
+      else toast('这张专辑尚未接入试听。');
+    });
+    renderDetail();
   }
 })();

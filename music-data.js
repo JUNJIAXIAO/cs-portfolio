@@ -6,7 +6,19 @@
  * 不要把未获公开传播许可的音频文件放入公开网站。
  */
 window.MUSIC_ALBUMS = [
-  { id: "great-small", title: "伟大的渺小", artist: "林俊杰", artistEn: "JJ LIN", colors: ["#405b6e", "#a7b8bb", "#daa595"], pattern: "sun", cover: "music-covers/great-small.jpg", note: "这张专辑的私人推荐语，等最终名单确定后再写下。", tracks: [], spotifyUrl: "", links: [] },
+  { id: "great-small", title: "伟大的渺小", artist: "林俊杰", artistEn: "JJ LIN", colors: ["#405b6e", "#a7b8bb", "#daa595"], pattern: "sun", cover: "music-covers/great-small.jpg", note: "2017 · 11 首歌曲。先把这张专辑做成试听样板，之后可以换成你自己的推荐语。", tracks: [
+    { title: "圣所", duration: "3:49", spotifyId: "6ilHdm1oBzsR5lY7vlPFhx" },
+    { title: "伟大的渺小", duration: "4:37", spotifyId: "1P2RxojrM3KEoKgM7pbc9i" },
+    { title: "穿越", duration: "4:37", spotifyId: "2nx9pgvvBvRjVVTjvEWhGD" },
+    { title: "四点四十四", duration: "3:47", spotifyId: "4UFrZFTWS6I62p3RG5ejBI" },
+    { title: "我继续", duration: "4:40", spotifyId: "1Pfuo0A9rUL1LQHhMG8RXg" },
+    { title: "剪云者", duration: "3:35", spotifyId: "1sRmhGuriRYQoMjZajl3gm" },
+    { title: "黑夜问白天", duration: "4:52", spotifyId: "5KNh5YQgfduzV4028Cfh3J" },
+    { title: "丹宁执着 (feat. 消除联萌)", duration: "4:13", spotifyId: "5QKx31CqJ6WgafgRJIf84b" },
+    { title: "身为风帆", duration: "3:57", spotifyId: "4e84WMsS2QjryysKnL0hcy" },
+    { title: "小瓶子", duration: "4:12", spotifyId: "6L8Iv2orxcaVQndiVGWMdc" },
+    { title: "Until The Day", duration: "4:35", spotifyId: "3EsdgnpdRxecbzU4Ccr91F" }
+  ], spotifyUrl: "https://open.spotify.com/album/0L4EfOigWI6pSjJlJI3yba", links: [] },
   { id: "dialogue", title: "和自己对话", artist: "林俊杰", artistEn: "JJ LIN", colors: ["#829b83", "#d6d4bd", "#b5a7ad"], pattern: "type", cover: "music-covers/dialogue.jpg", note: "这张专辑的私人推荐语，等最终名单确定后再写下。", tracks: [], spotifyUrl: "", links: [] },
   { id: "ye-hui-mei", title: "叶惠美", artist: "周杰伦", artistEn: "JAY CHOU", colors: ["#534940", "#b2a18c", "#b78e79"], pattern: "bars", cover: "music-covers/ye-hui-mei.jpg", note: "这张专辑的私人推荐语，等最终名单确定后再写下。", tracks: [], spotifyUrl: "", links: [] },
   { id: "fantasy", title: "范特西", artist: "周杰伦", artistEn: "JAY CHOU", colors: ["#554961", "#b6a2be", "#e5c7a9"], pattern: "type", cover: "music-covers/fantasy.jpg", note: "这张专辑的私人推荐语，等最终名单确定后再写下。", tracks: [], spotifyUrl: "", links: [] },
