@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="唱片墙与播放器舞台试稿"><title>Music · 完整系列试稿</title><link rel="stylesheet" href="paper-sub.css"><link rel="stylesheet" href="music-covers.css?v=spotify-2"><script src="music-data.js?v=spotify-2" defer></script><script src="paper-sub.js?v=spotify-2" defer></script></head>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="唱片墙与播放器舞台试稿"><title>Music · 完整系列试稿</title><link rel="stylesheet" href="paper-sub.css"><link rel="stylesheet" href="music-covers.css?v=spotify-3"><script src="music-data.js?v=spotify-3" defer></script><script src="paper-sub.js?v=spotify-3" defer></script></head>
 <body data-page="music"><span class="petal a"></span><span class="petal b"></span><span class="petal c"></span>
 <header class="site-header wrap"><a class="brand" href="paper-blog-full-demo.html">YOUR NAME<b>✳</b></a><nav class="nav" aria-label="主导航"><a href="paper-blog-full-demo.html">首页</a><a href="paper-publications-demo.html">研究</a><a href="paper-cv-demo.html">CV</a><a href="paper-photography-demo.html">照片墙</a><a href="paper-music-demo.html" aria-current="page">音乐</a></nav><div class="head-actions"><span class="visit-chip">VISITOR / DEMO</span><button class="theme-button" data-theme aria-label="切换深色模式">☾</button></div></header>
 <main class="page wrap"><section class="intro"><span class="eyebrow">04 / MUSIC COLLECTION</span><h1>我的唱片室<span style="color:var(--accent)">.</span></h1><p>一面专辑墙，一张正在细看的唱片。慢慢收集，慢慢分享。</p><div class="rule"></div></section>
@@ -7,7 +7,11 @@
     <div id="music-disc" class="music-disc" aria-hidden="true"><div class="music-disc-core">♫</div></div>
     <h2 id="music-now-title">伟大的渺小</h2><p id="music-now-artist">林俊杰</p>
     <div class="music-controls"><button type="button" id="music-prev" aria-label="上一张专辑">‹</button><span>切换专辑</span><button type="button" id="music-next" aria-label="下一张专辑">›</button></div>
-    <p class="music-control-caption">SPOTIFY PREVIEW</p>
+    <div class="music-mini-player" role="group" aria-label="试听控制">
+      <div class="music-mini-top"><span id="music-mini-song">选择右侧曲目</span><span id="music-mini-time">0:00 / --:--</span></div>
+      <div class="music-mini-timeline" aria-hidden="true"><i id="music-mini-fill"></i></div>
+      <div class="music-mini-bottom"><span>SPOTIFY PREVIEW</span><button type="button" id="music-mini-play" aria-label="播放试听">▶</button></div>
+    </div>
   </div>
   <div class="card music-info"><div id="music-info-content" class="music-info-content"></div></div>
 </section>

@@ -77,13 +77,25 @@
 .music-disc-panel .music-controls { gap: 15px; margin-top: 14px; }
 .music-disc-panel .music-controls button { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 50%; background: #fff9; font-size: 19px; cursor: pointer; }
 .music-disc-panel .music-controls span { color: var(--muted); font-size: 10px; letter-spacing: .12em; }
-.music-control-caption { margin: 27px 0 9px !important; font: 10px/1.4 ui-monospace, monospace !important; letter-spacing: .16em; }
-.spotify-player { width: min(100%, 370px); height: 80px; overflow: hidden; border-radius: 12px; background: #172120; }
+.music-mini-player { width: min(100%, 370px); margin-top: 26px; padding: 13px 15px 11px; border: 1px solid #d8dfdc; border-radius: 13px; background: #f8faf8; text-align: left; box-shadow: 0 6px 20px #314b4510; }
+.music-mini-top, .music-mini-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.music-mini-top span:first-child { overflow: hidden; color: var(--ink); font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.music-mini-top span:last-child { flex: none; color: var(--muted); font: 10px ui-monospace, monospace; }
+.music-mini-timeline { width: 100%; height: 4px; margin: 13px 0 9px; overflow: hidden; border-radius: 4px; background: #d8e0dc; }
+.music-mini-timeline i { display: block; width: 0; height: 100%; border-radius: inherit; background: #77958c; transition: width .2s linear; }
+.music-mini-bottom span { color: var(--muted); font: 9px ui-monospace, monospace; letter-spacing: .11em; }
+.music-mini-bottom button { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: #829f95; color: white; font-size: 12px; cursor: pointer; }
+.music-mini-bottom button:disabled { opacity: .4; cursor: default; }
+.spotify-shell { display: flex; flex-direction: column; width: min(100%, 370px); margin-top: 10px; padding: 9px; border: 1px solid #d8dfdc; border-radius: 13px; background: #f8faf8; }
+.spotify-shell[hidden] { display: none; }
+.spotify-shell-head { display: flex; justify-content: space-between; align-items: center; padding: 1px 4px 8px; color: var(--muted); font: 9px ui-monospace, monospace; letter-spacing: .08em; }
+.spotify-shell-head button { border: 0; background: transparent; color: var(--muted); font: 10px system-ui, sans-serif; cursor: pointer; }
+.spotify-player { width: 100%; height: 80px; overflow: hidden; border-radius: 10px; background: #172120; }
 .spotify-player[hidden] { display: none; }
 .spotify-player iframe { display: block; width: 100%; height: 80px; border: 0; }
-.spotify-hint { max-width: 370px; margin: 9px 0 3px !important; color: var(--muted); font-size: 10px !important; line-height: 1.55; }
+.spotify-hint { max-width: 370px; margin: 7px 2px 3px !important; color: var(--muted); font-size: 10px !important; line-height: 1.55; }
 .spotify-hint[hidden], .spotify-album-link[hidden] { display: none; }
-.spotify-album-link { align-self: center; margin-top: 4px; color: var(--accent); font-size: 11px; text-decoration: none; }
+.spotify-album-link { align-self: center; margin: 3px 0 2px; color: var(--accent); font-size: 10px; text-decoration: none; }
 .spotify-album-link:hover { text-decoration: underline; }
 @media (max-width: 700px) {
   .music-stage .music-info { padding: 24px 18px; }

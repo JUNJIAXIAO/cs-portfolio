@@ -148,22 +148,60 @@
     let currentTrack = -1;
     let embedController = null;
     let embedFallback = false;
+    let playerOpen = false;
+    let pendingPlay = false;
+    let isPlaying = false;
     let currentEntity = albums[0] && albums[0].spotifyUrl || '';
     let loadedEntity = '';
+    const miniSong = document.getElementById('music-mini-song');
+    const miniTime = document.getElementById('music-mini-time');
+    const miniFill = document.getElementById('music-mini-fill');
+    const miniPlay = document.getElementById('music-mini-play');
+    const playerShell = document.createElement('div');
+    playerShell.className = 'spotify-shell';
+    playerShell.hidden = true;
+    document.querySelector('.music-mini-player').after(playerShell);
+    const shellHead = document.createElement('div');
+    shellHead.className = 'spotify-shell-head';
+    const shellLabel = document.createElement('span');
+    shellLabel.textContent = 'SPOTIFY 官方试听';
+    const closePlayer = document.createElement('button');
+    closePlayer.type = 'button';
+    closePlayer.textContent = '收起 ×';
+    closePlayer.setAttribute('aria-label', '暂停并收起 Spotify 播放器');
+    shellHead.append(shellLabel, closePlayer);
+    playerShell.append(shellHead);
     const playerHost = document.createElement('div');
     playerHost.className = 'spotify-player';
     playerHost.setAttribute('aria-label', 'Spotify 官方播放器');
-    document.querySelector('.music-control-caption').after(playerHost);
+    playerShell.append(playerHost);
     const playerHint = document.createElement('p');
     playerHint.className = 'spotify-hint';
-    playerHint.textContent = '点选右侧曲目切换试听；播放时长由 Spotify 决定。';
-    playerHost.after(playerHint);
+    playerHint.textContent = '如未自动播放，请在 Spotify 播放器中点击播放。';
+    playerShell.append(playerHint);
     const albumLink = document.createElement('a');
     albumLink.className = 'spotify-album-link';
     albumLink.target = '_blank';
     albumLink.rel = 'noopener noreferrer';
     albumLink.textContent = '在 Spotify 打开整张专辑 ↗';
-    playerHint.after(albumLink);
+    playerShell.append(albumLink);
+    function formatTime(milliseconds) {
+      const seconds = Math.max(0, Math.floor(milliseconds / 1000));
+      return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+    }
+    function setMiniPlaying(playing) {
+      isPlaying = playing;
+      miniPlay.textContent = playing ? 'Ⅱ' : '▶';
+      miniPlay.setAttribute('aria-label', playing ? '暂停试听' : '播放试听');
+    }
+    function closeSpotifyPlayer() {
+      if (embedController) embedController.pause();
+      playerOpen = false;
+      pendingPlay = false;
+      playerShell.hidden = true;
+      setMiniPlaying(false);
+    }
+    closePlayer.addEventListener('click', closeSpotifyPlayer);
     function albumEntity(album) { return album.spotifyUrl || ''; }
     function showFallback() {
       embedFallback = true;
@@ -178,24 +216,24 @@
       playerHost.append(frame);
       loadedEntity = currentEntity;
     }
-    function loadEntity(url) {
+    function loadEntity(url, autoPlay = false) {
       currentEntity = url;
       if (!url) {
-        playerHost.hidden = true;
-        playerHint.hidden = true;
-        albumLink.hidden = true;
-        if (embedController) embedController.pause();
+        closeSpotifyPlayer();
         if (embedFallback) playerHost.replaceChildren();
         loadedEntity = '';
         return;
       }
-      playerHost.hidden = false;
-      playerHint.hidden = false;
-      albumLink.hidden = false;
       if (embedController && url !== loadedEntity) {
         embedController.loadEntity(url);
         loadedEntity = url;
       } else if (embedFallback && url !== loadedEntity) showFallback();
+      if (autoPlay) {
+        pendingPlay = true;
+        playerOpen = true;
+        playerShell.hidden = false;
+        if (embedController) embedController.play();
+      }
     }
     window.onSpotifyIframeApiReady = IFrameAPI => {
       if (!playerHost.isConnected) return;
@@ -204,10 +242,28 @@
       const initialEntity = currentEntity || albumEntity(albums[0]);
       const embedMount = document.createElement('div');
       playerHost.append(embedMount);
-      IFrameAPI.createController(embedMount, { url: initialEntity, width: playerHost.clientWidth || 420, height: 80 }, controller => {
+      const panelWidth = document.querySelector('.music-disc-panel').clientWidth - 56;
+      IFrameAPI.createController(embedMount, { url: initialEntity, width: Math.min(370, panelWidth || 370), height: 80 }, controller => {
         embedController = controller;
         loadedEntity = initialEntity;
         if (currentEntity && currentEntity !== initialEntity) loadEntity(currentEntity);
+        controller.addListener('ready', () => {
+          if (playerOpen && pendingPlay) controller.play();
+        });
+        controller.addListener('playback_started', () => {
+          pendingPlay = false;
+          setMiniPlaying(true);
+        });
+        controller.addListener('playback_update', event => {
+          const state = event.data;
+          if (!state) return;
+          if (state.duration > 0) {
+            miniTime.textContent = formatTime(state.position) + ' / ' + formatTime(state.duration);
+            miniFill.style.width = Math.min(100, state.position / state.duration * 100) + '%';
+          }
+          setMiniPlaying(!state.isPaused);
+        });
+        if (playerOpen && pendingPlay) controller.play();
       });
     };
     const spotifyScript = document.createElement('script');
@@ -267,11 +323,7 @@
           const duration = document.createElement('span');
           duration.textContent = track.duration;
           button.append(number, copy, duration);
-          button.addEventListener('click', () => {
-            currentTrack = index;
-            loadEntity('https://open.spotify.com/track/' + track.spotifyId);
-            renderDetail();
-          });
+          button.addEventListener('click', () => selectTrack(index));
           item.append(button);
           list.append(item);
         });
@@ -279,10 +331,27 @@
       }
       content.append(inner);
       albumLink.href = album.spotifyUrl || '#';
+      miniPlay.disabled = !album.tracks.length;
+      if (currentTrack < 0) {
+        miniSong.textContent = album.tracks.length ? '选择右侧曲目' : '试听待添加';
+        miniTime.textContent = '0:00 / --:--';
+        miniFill.style.width = '0%';
+      }
       loadEntity(currentTrack >= 0 && album.tracks[currentTrack]
         ? 'https://open.spotify.com/track/' + album.tracks[currentTrack].spotifyId
         : albumEntity(album));
       wall.querySelectorAll('.music-album').forEach((button, index) => button.classList.toggle('selected', index === selected));
+    }
+    function selectTrack(index) {
+      const track = albums[selected] && albums[selected].tracks[index];
+      if (!track) return;
+      currentTrack = index;
+      miniSong.textContent = track.title;
+      miniTime.textContent = '0:00 / ' + track.duration;
+      miniFill.style.width = '0%';
+      setMiniPlaying(false);
+      loadEntity('https://open.spotify.com/track/' + track.spotifyId, true);
+      renderDetail();
     }
     albums.forEach((album, index) => {
       const button = document.createElement('button');
@@ -311,11 +380,20 @@
       const artist = document.createElement('small');
       artist.textContent = album.artist;
       button.append(art, title, artist);
-      button.addEventListener('click', () => { selected = index; currentTrack = -1; renderDetail(); document.querySelector('.music-stage').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+      button.addEventListener('click', () => { closeSpotifyPlayer(); selected = index; currentTrack = -1; renderDetail(); document.querySelector('.music-stage').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
       wall.append(button);
     });
-    document.getElementById('music-prev').addEventListener('click', () => { selected = (selected - 1 + albums.length) % albums.length; currentTrack = -1; renderDetail(); });
-    document.getElementById('music-next').addEventListener('click', () => { selected = (selected + 1) % albums.length; currentTrack = -1; renderDetail(); });
+    document.getElementById('music-prev').addEventListener('click', () => { closeSpotifyPlayer(); selected = (selected - 1 + albums.length) % albums.length; currentTrack = -1; renderDetail(); });
+    document.getElementById('music-next').addEventListener('click', () => { closeSpotifyPlayer(); selected = (selected + 1) % albums.length; currentTrack = -1; renderDetail(); });
+    miniPlay.addEventListener('click', () => {
+      if (currentTrack < 0) { selectTrack(0); return; }
+      playerOpen = true;
+      playerShell.hidden = false;
+      if (embedController) {
+        if (isPlaying) embedController.pause();
+        else embedController.play();
+      } else pendingPlay = true;
+    });
     renderDetail();
   }
 })();
